@@ -1,0 +1,1 @@
+embedded_android_chinese
