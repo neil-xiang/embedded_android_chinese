@@ -2,36 +2,37 @@
 
 > 校对：
 
-# 编译基础
-现在我们已经下载好了AOSP，那我们就产生一个里面有什么的想法，所以，我们让其运行起来。但，最重要的是我们首先要能够编译它。我们需要确认在我们的Ubuntu上已经安装了必要的包。接下来的操作是基于Ubuntu 11.04。就算你是使用比这新或者旧版本的基于Debian的Linux改造版本，这些操作应该也是相近的。（参考[在非Ubuntu系统或者虚拟机上编译]()72页那些能够编译AOSP的其它系统）
+### 构建基础(Build Basics)
+	现在我们已经下载好了AOSP，那我们就产生一个里面有什么的想法，所以，我们让其运行起来。但最重要的是我们首先要能够构建它。我们需要确认在我们的Ubuntu上已经安装了必要的包。接下来的操作是
+基于Ubuntu 11.04，假设我们要构建Android2.3。就算你是使用比这新或者旧版本的基于Debian的Linux改造版本，这些操作应该也是相近的。（对其它那些能够编译AOSP的系统参考[在非Ubuntu系统或者虚拟
+机上编译]）。像我之前提到的那样，参考Google的”Initializing a Build Environment“来得到在最新的Ubuntu版本上构建最新的AOSP版本最新的包。
 
-## 编译系统设置
+# 编译系统设置
 
-首先，在我们的开发系统中安装一些基础的包。如果你在其它开发的过程中安装了一些这种包，OK，没问题。Ubuntu系统包管理系统将忽略这些包安装。
-
-```
-$ sudo apt-get install bison flex gperf git-core gnupg zip tofrodos \ 
-> build-essential g++-multilib libc6-dev libc6-dev-i386 ia32-libs mingw32 \ 
-> zlib1g-dev lib32z1-dev x11proto-core-dev libx11-dev \ 
-> lib32readline5-dev libgl1-mesa-dev lib32ncurses5-dev
-
-```
+	首先，在我们的开发系统中安装一些基础的包。如果你在其它开发的过程中安装了一些这种包，OK，没问题。Ubuntu系统包管理系统将忽略这些软件包安装。
+			**注意，在下面的命令中由于书的宽度的限制命令被分成了几行。在shell中行的末尾使用'\'强制shell将另一行重新开始让你有机会继续输入你的命令。因此，你必须在接下来的命令末尾输入’\‘，但
+				是后面的行开始的’>‘不是你需要输入的，它由shell自动插入。本书中的其它命令基于相同的原因使用同样的技巧。
+				
+	$ sudo apt-get install bison flex gperf git-core gnupg zip tofrodos \
+	> build-essential g++-multilib libc6-dev libc6-dev-i386 ia32-libs mingw32 \
+	> zlib1g-dev lib32z1-dev x11proto-core-dev libx11-dev \
+	> lib32readline5-dev libgl1-mesa-dev lib32ncurses5-dev
 
 你也许也需要修正一些符号链接：
 
-```
-$ sudo ln -s /usr/lib32/libstdc++.so.6 /usr/lib32/libstdc++.so
-$ sudo ln -s /usr/lib32/libz.so.1 /usr/lib32/libz.so
-```
+	$ sudo ln -s /usr/lib32/libstdc++.so.6 /usr/lib32/libstdc++.so
+	$ sudo ln -s /usr/lib32/libz.so.1 /usr/lib32/libz.so
 
-最后，你需要安装 Sun公司的JDK：
+	最后，你需要安装Sun公司的JDK；使用OpenJDK与AOSP“官方”是不正式的，尽管有些人可以成功使用它，但是gcj不会这样做。在Ubuntu中，您曾经通过使用以下命令序列来获取JDK：
 
-```
-$ sudo add-apt-repository "deb http://archive.canonical.com/ natty partner"
-$ sudo apt-get update
-$ sudo apt-get install sun-java6-jdk
-```
+	$ sudo add-apt-repository "deb http://archive.canonical.com/ natty partner"
+	$ sudo apt-get update
+	$ sudo apt-get install sun-java6-jdk
+	
+	不幸的是，Canonical（Ubuntu背后的公司）和Oracle之间似乎有一些分歧，并且这些指令在撰写本文时不再工作。相反，您应该参考Ubuntu的指导，让JDK V6在你的主机上运行。请注意，在撰写本文时，版
+本7在AOSP上不能工作。从本质上讲，Ubuntu的说明解释说，您需要从Oracle的站点获取JDK二进制文件并进行安装。这是一个稍微修改版本的当前发布的指令，您可能需要适应最新版本的JDK:
 
+	
 你的系统现在可以准备编译Android了。明显地，在你的以后编译Android的时候，不需要再安装这些包。在你每台Android开发系统只需要设置一次。
 
 ## 编译Android

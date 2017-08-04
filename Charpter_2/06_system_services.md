@@ -141,5 +141,36 @@ system_server进程下运行。系统服务还包含一些通过JNI访问的本�
 	67 SurfaceFlinger: [android.ui.ISurfaceComposer]
 	
 	不幸的是，这些服务如何工作的资料都不是很多。您必须查看每个服务的源代码，以准确了解其工作原理以及如何与其他服务进行交互。
-
 	
+	##服务管理器及Binder交互(Service Manager and Binder Interaction)
+	
+	如我之前解释的那样，binder机制作为面向对象的RPC/IPC系统服务的基础。系统中的进程通过Binder来调用系统服务，然而它首先必须要有一个句柄。例如，Binder允许app开发人员通过WakeLock基类的acquire()
+方法来通过电源管理调用一个唤醒锁请求。但是在那个请求之前，开发人员必须首先得到电源管理服务的一个句柄函数。就如我们在接下来我们看到的那样，app开发API实际上隐藏了它如何得到对开发人员很抽象的句
+柄函数详细的细节，但是在这之下，系统服务的句柄函数都是通过服务管理器来查找的，如图2-5所示。
+		*图2-5 服务管理器及Binder交互
+	可以将服务管理器看着是一个系统中可以提供的服务的一个黄页。如果一个系统服务没有在服务管理器中注册，那它对于系统的其它部分是不可见的。为了提供索引的功能，服务管理器在任何服务之前由‘init’启动。
+然后打开/dev/binder并使用一个特殊的调用ioctl()来讲它自己设置为Binder的上下文管理器(Binder's Context Manager)(图2-5中的A1)。此后，很多系统进程试图与ID为0的Binder(也就是在很多代码中被称为‘魔法’
+('magic')Binder或者‘魔法对象’(‘magic object’))通信，实际上是通过Binder和服务管理器通信。
+	当系统服务启动时，它会将每个单独的服务注册并通过服务管理器实例化(图2-5种的A2)。以后当app是如与系统服务通信是，比如说电源管理服务，，它首先向服务管理器请求服务的句柄函数(B1)并调用那个服务的
+方法(B2).相反，对app中运行的服务组件调用直接通过Binder(C1)而不是通过服务管理器来查找。
+	服务管理器也被一些命令行工具以特殊的方式使用，比如'dumpsys'工具，它允许你将一个信号的状态或者所有的系统服务转存下来。为了得到所有服务的列表，‘dumpsys’循环的得到每个系统服务(D1),没一次交互都
+得到第n各服务直到全部得到。为了得到每一个服务，‘dumpsys’为让服务管理器定位到那个具体的(D2).当得到服务的句柄函数后，'dumpsys'会调用系统的dump()函数来转存服务的状态(D3)并在终端上显示出来.
+
+	##服务调用(Calling on Services)
+	正如我之前说的，刚刚我解释的东西对于普通的app开发人员是不可见的，例如，这里有一段代码段，这允许我们使用常规app开发API在应用程序中捕获唤醒锁：
+	
+	PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+	PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, "myPreciousWakeLock");
+	wakeLock.acquire(100);
+	
+	注意在这里我们没有看到任何服务管理器的迹象。相反的，我们使用了getSystemService()并传递了POWER_SERVICE参数给它。然而，在内部，getSystemService()代码确实使用了服务管理器来定位电源管理服务，所以
+我们能成功创建一个唤醒锁。附录B显示如何添加系统服务并通过getSystemService()使其可用。
+
+	##一个服务例子:活动管理器(A Service Example: the Activity Manager)
+	
+	虽然本书不能包含每一个系统服务，但是让我们来快速的浏览一下活动管理器(Activity Manager)，核心系统服务中的一个。在Android2.3/Gingerbread,Activity Manager源代码实际上包含30多个文件和20,000行代码。
+如果在Android内部有一个内核的话，这个服务就非常接近它。它负责开始一个新的组件，比如Activities和Services，along with the fetching of Content Providers and intent broadcasting。如果你碰到过可怕的
+ANR(Application Not Responding)对话框的话，它的背后就有Activity Manager。它还涉及内核低内存处理时OOM调整的维护、权限管理、任务管理器等。
+	例如，当用户在他们的桌面上点击一个图标的话，最先发生的事情就是Launcher的onClick()的回调被调用(Launcher是在AOSP的内的一个默认的app程序包，负责处理和用户及主屏的主界面)。为了处理这个事件，Launcher
+会通过Binder调用Activity Manager服务的startActivity()方法。这时服务会调用startViaZygote()方法，这个方法会打开一个端口给Zygote并让它开始一个Activity。在阅读本章的最后一节之后，这一切可能会更容易理解。
+	如果你对Linux的内部熟悉的话，一个很好的思路是，可以看着Activity Manager对于Android就像内核源码中kernel/目录下的内容对于Liunx一样。这很重要。
