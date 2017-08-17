@@ -121,7 +121,7 @@ NFC等。
 API并创建和分发自己的自定义SDK，这一点也将非常重要。
 	为了建立一个开发环境，按照Google为SDK提供的说明或者看看Marko Gargenta的书《Learning Android》。
 
-##客户端开发(Native Development)
+##本地开发(Native Development)
 	虽然大多数应用程序是使用我们刚才讨论的开发环境专门开发的,某些开发人员需要运行本机编译的代码.为此，Google已经提供了本地开发工具包(Native Development Kit(NDK))。
 正如宣传的那样，这主要是针对游戏开发者需要从他们的游戏运行的设备中挤出最后一点的性能。因此，NDK中提供的API主要面向图形渲染和传感器输入检索。
 例如，著名的的“愤怒的小鸟”游戏非常依赖于本机运行的代码。

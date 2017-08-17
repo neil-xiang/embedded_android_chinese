@@ -156,7 +156,7 @@ system_server进程下运行。系统服务还包含一些通过JNI访问的本�
 	服务管理器也被一些命令行工具以特殊的方式使用，比如'dumpsys'工具，它允许你将一个信号的状态或者所有的系统服务转存下来。为了得到所有服务的列表，‘dumpsys’循环的得到每个系统服务(D1),没一次交互都
 得到第n各服务直到全部得到。为了得到每一个服务，‘dumpsys’为让服务管理器定位到那个具体的(D2).当得到服务的句柄函数后，'dumpsys'会调用系统的dump()函数来转存服务的状态(D3)并在终端上显示出来.
 
-	##服务调用(Calling on Services)
+	##服务请求(Calling on Services)
 	正如我之前说的，刚刚我解释的东西对于普通的app开发人员是不可见的，例如，这里有一段代码段，这允许我们使用常规app开发API在应用程序中捕获唤醒锁：
 	
 	PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
